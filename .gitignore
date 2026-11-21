@@ -1,0 +1,35 @@
+# Python environments and generated files
+.venv/
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime data and private configuration
+logs/
+outputs/
+desks/
+zones/*.json
+**/zones/*.json
+config.yaml
+.env
+.env.*
+!.env.example
+
+# Local models and media
+*.pt
+*.onnx
+videos/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

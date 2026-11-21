@@ -1,0 +1,37 @@
+mode: detect
+
+model:
+  name: yolov8n.pt
+  fallback: yolov8s.pt
+  imgsz: 960
+  person_conf: 0.25
+  phone_conf: 0.15
+  object_conf: 0.2
+  use_gpu: true
+
+cameras:
+  - name: office
+    source: 0
+
+zones_dir: ../zones
+desks_dir: ../desks
+logs_dir: ../logs
+output_dir: ../outputs
+
+# For an RTSP source, use source: ${CAMERA_RTSP_URL} and set it in .env.
+status:
+  stable_frames: 3
+  persistence_frames: 3
+  phone_proximity_ratio: 0.45
+
+desks_memory:
+  enabled: true
+  min_still_seconds: 5
+  absent_after_seconds: 3
+  urgent_after_seconds: 30
+  margin: 0.25
+  max_desks: 12
+  forget_after_minutes: 0
+
+preprocessing:
+  clahe: false

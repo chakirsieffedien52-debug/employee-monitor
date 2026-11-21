@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420" role="img" aria-labelledby="title description">
+  <title id="title">Employee Monitor demo placeholder</title>
+  <desc id="description">Replace this graphic with a short, consented dashboard demo GIF before publishing.</desc>
+  <rect width="1000" height="420" rx="18" fill="#f4f7fa"/>
+  <rect x="24" y="24" width="952" height="58" rx="10" fill="#18324b"/>
+  <text x="54" y="61" fill="#ffffff" font-family="system-ui, sans-serif" font-size="24" font-weight="700">Employee Monitor</text>
+  <g fill="#ffffff" stroke="#dce4ec" stroke-width="2">
+    <rect x="42" y="112" width="290" height="210" rx="12"/>
+    <rect x="355" y="112" width="290" height="210" rx="12"/>
+    <rect x="668" y="112" width="290" height="210" rx="12"/>
+  </g>
+  <g font-family="system-ui, sans-serif">
+    <text x="66" y="154" fill="#17212b" font-size="20" font-weight="700">Office</text>
+    <text x="66" y="200" fill="#16803c" font-size="16">Desk 1 - WORKING</text>
+    <text x="66" y="238" fill="#bd3030" font-size="16">Desk 2 - ABSENT</text>
+    <text x="66" y="276" fill="#bd3030" font-size="16">Desk 3 - PHONE USAGE</text>
+    <text x="379" y="154" fill="#17212b" font-size="20" font-weight="700">Reception</text>
+    <text x="379" y="200" fill="#16803c" font-size="16">Desk 1 - WORKING</text>
+    <text x="379" y="238" fill="#607182" font-size="16">Live status preview</text>
+    <text x="692" y="154" fill="#17212b" font-size="20" font-weight="700">Preview placeholder</text>
+    <text x="692" y="218" fill="#607182" font-size="16">Replace with a consented</text>
+    <text x="692" y="246" fill="#607182" font-size="16">demo GIF before publishing.</text>
+  </g>
+  <text x="42" y="370" fill="#607182" font-family="system-ui, sans-serif" font-size="14">Illustrative UI only - not captured application output</text>
+</svg>
