@@ -2,7 +2,7 @@
 
 Local-first person and phone detection with optional remembered-desk absence alerts.
 
-[![CI](https://github.com/YOUR_GITHUB_USERNAME/employee-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/employee-monitor/actions/workflows/ci.yml)
+[![CI](https://github.com/chakirsieffedien52-debug/employee-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/chakirsieffedien52-debug/employee-monitor/actions/workflows/ci.yml)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
