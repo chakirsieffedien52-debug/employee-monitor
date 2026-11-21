@@ -50,6 +50,10 @@ class CameraWorker:
         return self._finished.is_set()
 
     @property
+    def is_live(self) -> bool:
+        return self._is_live
+
+    @property
     def fps(self) -> float:
         return self._fps
 

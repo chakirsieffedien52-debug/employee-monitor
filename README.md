@@ -22,7 +22,8 @@ Local-first person and phone detection with optional remembered-desk absence ale
 - Webcam, local video, and RTSP/HTTP stream inputs; reconnecting capture workers and multi-camera previews.
 - Local event CSV, daily CSV/HTML/PDF reports, and an optional live dashboard.
 - Optional low-light CLAHE preprocessing, face blur, GPU inference, and phone pose/tile options.
-- No raw video is saved unless `output.save_video` is enabled.
+- Annotated video from file sources is saved under `outputs/` by default; camera
+  recordings require `output.save_video`.
 
 ## How it works
 
@@ -76,6 +77,8 @@ employee-monitor select-zones --config configs/config.example.yaml --camera offi
 ```
 
 Press **Esc** to stop a visible preview and **Space** to pause or resume it. `--max-frames N` is available for bounded smoke runs. The GUI selector requires a graphical desktop.
+Use `--show` to keep the final preview open until **Esc**; `--headless` disables
+the preview. Each run writes a `summary.csv`, including headless runs.
 
 ## Cameras and configuration
 
@@ -117,7 +120,7 @@ Set `CAMERA_RTSP_URL` in the local `.env` file or process environment. Never com
 | `desks_memory.webhook_url` | Optional HTTP(S) urgent-alert endpoint. Keep secret URLs out of committed config. |
 | `preprocessing.clahe` | Optional CLAHE low-light preprocessing; off by default. |
 | `privacy.blur_faces` | Optional local face blurring; this is not guaranteed anonymization. |
-| `output.save_video` | Write annotated output video; off by default. |
+| `output.save_video` | Write annotated output video; file sources are saved by default, while camera recordings are off by default. |
 | `dashboard.host`, `dashboard.port` | Dashboard bind address and port; defaults to `127.0.0.1:8000`. |
 
 The full parser validates camera sources and settings when loading the YAML file. For `mode: desks`, optional discovery and `employee-monitor select-zones` are available; no calibration is needed in the default detect mode.
@@ -126,7 +129,7 @@ The full parser validates camera sources and settings when loading the YAML file
 
 Start the live dashboard with `employee-monitor --dashboard --config configs/config.example.yaml`. Open `http://127.0.0.1:8000` on the same machine. The dashboard shows per-camera statuses, recent status events, and CSV/HTML/PDF export links. In detect mode, tracked-person status changes and remembered-desk absence start/end/urgent events are logged to `logs/events.csv`; absence duration is recorded when the person returns. Remembered-desk status is also shown in the dashboard.
 
-The application stores status events and desk-memory JSON, not raw camera footage by default. Annotated video output is only written when explicitly enabled. Protect logs, desk-memory files, any exports, and the dashboard as potentially sensitive workplace information.
+The application stores status events and desk-memory JSON. File sources produce annotated video under `outputs/` by default; camera recordings remain disabled unless explicitly enabled. Protect logs, desk-memory files, any exports, and the dashboard as potentially sensitive workplace information.
 
 ## Docker
 

@@ -86,6 +86,7 @@ class CameraRuntime:
     processed_frames: int = 0
     previous_index: Optional[int] = None
     previous_processing_time: Optional[float] = None
+    memory_time_origin: Optional[float] = None
     fps: float = 0.0
     last_frame: Optional[np.ndarray] = None
     last_output: Optional[np.ndarray] = None
@@ -340,6 +341,16 @@ def _durations(runtime: CameraRuntime) -> Dict[str, Dict[str, float]]:
     return result
 
 
+def _desk_memory_timestamp(runtime: CameraRuntime, packet: FramePacket) -> float:
+    if runtime.worker.is_live:
+        return time.time()
+    fps = packet.fps if math.isfinite(packet.fps) and packet.fps > 0 else 30.0
+    video_time = packet.index / fps
+    if runtime.memory_time_origin is None:
+        runtime.memory_time_origin = time.time() - video_time
+    return runtime.memory_time_origin + video_time
+
+
 def _process_packet(
     runtime: CameraRuntime,
     packet: FramePacket,
@@ -442,7 +453,7 @@ def _process_packet(
         absent_desks: Tuple[AbsentDesk, ...] = ()
         urgent_desk = None
         if runtime.desk_memory is not None:
-            memory_time = time.time()
+            memory_time = _desk_memory_timestamp(runtime, packet)
             memory_events = runtime.desk_memory.update(
                 tracked_detections,
                 memory_time,
@@ -489,7 +500,7 @@ def _process_packet(
             runtime.fps,
         )
 
-    if config.save_video:
+    if config.save_video or not runtime.worker.is_live:
         if runtime.writer is None:
             height, width = runtime.last_output.shape[:2]
             camera_output = config.output_dir / runtime.config.name / "result.mp4"
@@ -548,6 +559,7 @@ def run(
     dashboard: bool = False,
     clear_desks: bool = False,
     no_desk_memory: bool = False,
+    show: bool = False,
 ) -> int:
     config = load_config(config_path)
     if clear_desks:
@@ -585,6 +597,7 @@ def run(
     }
     server_info = None
     error = None
+    stopped_by_escape = False
     try:
         if dashboard:
             server_info = _run_dashboard(config, live_state, events_by_camera)
@@ -663,6 +676,7 @@ def run(
                         cv2.imshow(name, frame)
                 key = cv2.waitKey(1 if not paused else 50) & 0xFF
                 if key == 27:
+                    stopped_by_escape = True
                     break
                 if key == ord(" "):
                     paused = not paused
@@ -671,6 +685,22 @@ def run(
                 time.sleep(0.01)
         if not any(runtime.had_frame for runtime in runtimes):
             raise RuntimeError("No frames were received from any configured camera.")
+        if show and not headless and not stopped_by_escape:
+            while True:
+                if grid:
+                    outputs = {
+                        runtime.config.name: runtime.last_output
+                        for runtime in runtimes
+                        if runtime.last_output is not None
+                    }
+                    if outputs:
+                        cv2.imshow("Employee Monitor", compose_grid(outputs))
+                else:
+                    for runtime in runtimes:
+                        if runtime.last_output is not None:
+                            cv2.imshow(runtime.config.name, runtime.last_output)
+                if cv2.waitKey(30) & 0xFF == 27:
+                    break
     except KeyboardInterrupt:
         LOGGER.info("Stopping monitoring after keyboard interrupt")
     except Exception as exc:
@@ -680,8 +710,12 @@ def run(
             runtime.worker.stop()
             if runtime.writer is not None:
                 runtime.writer.release()
-            if config.mode == "desks" and runtime.status_tracker is not None:
-                runtime.event_logger.save_summary(runtime.status_tracker.summary())
+            if config.mode == "desks":
+                runtime.event_logger.save_summary(
+                    runtime.status_tracker.summary()
+                    if runtime.status_tracker is not None
+                    else []
+                )
             runtime.event_logger.close()
             event_dir = (
                 config.logs_dir
@@ -698,6 +732,8 @@ def run(
                 if config.mode == "detect"
                 else camera_events
             )
+        if config.mode == "detect" and detect_logger is not None:
+            detect_logger.save_summary([])
         if not headless:
             cv2.destroyAllWindows()
         if server_info is not None:
@@ -708,6 +744,20 @@ def run(
         exporter.export_daily(
             events_by_camera,
             {runtime.config.name: _durations(runtime) for runtime in runtimes},
+        )
+        processed_frames = sum(runtime.processed_frames for runtime in runtimes)
+        event_count = sum(len(events) for events in events_by_camera.values())
+        summary_paths = (
+            [config.logs_dir / "summary.csv"]
+            if config.mode == "detect"
+            else [
+                config.logs_dir / runtime.config.name / "summary.csv"
+                for runtime in runtimes
+            ]
+        )
+        print(
+            f"Run summary: {processed_frames} frame(s), {event_count} event(s). "
+            f"Summary: {', '.join(str(path) for path in summary_paths)}"
         )
     if error is not None:
         raise error
@@ -777,6 +827,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
     parser.add_argument("--headless", action="store_true", help="Do not open windows.")
     parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Keep the final live preview open until Esc is pressed.",
+    )
+    parser.add_argument(
         "--clear-desks",
         action="store_true",
         help="Delete remembered desk JSON files before starting.",
@@ -836,6 +891,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return run(
             config_path,
             headless=args.headless,
+            show=args.show,
             grid=args.grid,
             recalibrate=args.recalibrate,
             max_frames=args.max_frames,
